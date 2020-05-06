@@ -44,7 +44,7 @@ deploy:
   # tagged releases from master, go to distribution
   - provider: script
     skip_cleanup: true
-    script: "bash scripts/deploy-artifactory.sh 'eosiojava-product-eosio-dist'"
+    script: "bash scripts/deploy-artifactory.sh 'arisenjava-product-arisen-dist'"
     on:
       tags: true
       branch: master

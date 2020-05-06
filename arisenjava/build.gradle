@@ -1,0 +1,108 @@
+
+plugins {
+    id 'java-library'
+    //Remove 'com.jfrog.artifactory' plugin if you are not using Artifactory
+    id 'com.jfrog.artifactory' version '4.9.5'
+    //Remove 'com.jfrog.bintray' plugin if you are not using Bintray
+    id 'com.jfrog.bintray' version '1.7.3'
+    id 'maven-publish'
+
+}
+
+group 'one.block'
+
+repositories {
+    jcenter()
+    mavenCentral()
+
+    //Remove maven{} block if you are not using Artifactory
+    maven {
+        credentials{
+            username artifactory_username
+            password artifactory_password
+        }
+        url artifactory_contextURL
+    }
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+dependencies {
+    api 'org.jetbrains:annotations:16.0.1'
+    api 'com.google.code.gson:gson:2.8.5'
+    api 'org.bouncycastle:bcprov-jdk15on:1.61'
+    api 'org.bouncycastle:bcpkix-jdk15on:1.61'
+    // This works on android and non-android, but is necessary to keep us to 1.7 targets.
+    api 'com.google.guava:guava:27.1-android'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:2.26.0'
+    api 'org.bitcoinj:bitcoinj-core:0.15.2'
+    api 'org.slf4j:slf4j-jdk14:1.7.25'
+}
+
+def libraryGroupId = 'one.block'
+def libraryArtifactId = 'arisenjava'
+def libraryVersion = '0.1.2'
+
+task sourcesJar(type: Jar, dependsOn: classes){
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+javadoc.failOnError = false
+task javadocJar(type: Jar, dependsOn: javadoc){
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+publishing {
+    publications {
+        jar(MavenPublication) {
+            from components.java
+
+            artifact sourcesJar {
+                classifier "sources"
+            }
+
+            artifact javadocJar {
+                classifier "javadoc"
+            }
+
+            groupId libraryGroupId
+            version libraryVersion
+            artifactId libraryArtifactId
+
+            artifact("$buildDir/libs/${artifactId}.jar")
+        }
+    }
+}
+
+//Remove artifactory{} block if you are not using Artifactory
+artifactory {
+    contextUrl = artifactory_contextURL
+    publish {
+        repository {
+            repoKey = artifactory_repo
+
+            username = artifactory_username
+            password = artifactory_password
+        }
+        defaults {
+            publications('jar')
+            publishArtifacts = true
+
+            properties = ['qa.level': 'basic', 'q.os': 'android', 'dev.team': 'core']
+            publishPom = true
+        }
+    }
+}
+//Remove deleteOldVersion{} block if you are not using Artifactory
+task deleteOldVersion(){
+    def auth = artifactory_username + ':' + artifactory_password
+    def repo = artifactory_contextURL + '/android-libs-scratch-local' + '/one/block/arisenjava'
+    ['curl', '-XDELETE', 'POST', '-u', auth, repo].execute()
+}
