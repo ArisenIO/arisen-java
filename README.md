@@ -78,7 +78,7 @@ TransactionProcessor processor = session.getTransactionProcessor();
 String jsonData = "{\n" +
            "\"from\": \"person1\", \n" +
            "\"to\": \"person2\", \n" +
-           "\"quantity\": \"10.0000 RSN\", \n" +
+           "\"quantity\": \"10.0000 RIX\", \n" +
            "\"memo\" : \"Something\"\n" +
            "}";
 
